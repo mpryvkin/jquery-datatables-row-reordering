@@ -19,19 +19,23 @@
 */
 (function ($) {
 
-
     $.fn.rowReordering = function (options) {
-
+		
         function fnRefreshRowPositions(sSelector, from, to, id) {
+		
+			var oSettings = oTable.fnSettings();
+			
             $(sSelector, oTable).each(function (index) {
-                var pos = oTable.fnGetPosition(this); // get row position in current model
-                if (properties.iIndexColumn > -1)
-                    oTable.fnUpdate(index + properties.iStartPosition, pos, properties.iIndexColumn, false); // false = defer redraw until all row updates are done
-                else
-                    $(this).attr("data-position", index);
+
+                oTable.fnUpdate(oSettings._iDisplayStart + index + properties.iStartPosition, 
+								oTable.fnGetPosition(this), // get row position in current model
+								properties.iIndexColumn,
+								false); // false = defer redraw until all row updates are done
 
             });
+			
             oTable.fnDraw();
+			
         }
 
         function _fnAlert(message, type) { alert(message); }
@@ -48,6 +52,8 @@
         };
 
         var properties = $.extend(defaults, options);
+		
+		var iFrom, iTo;
 
         return this.each(function () {
 
@@ -59,12 +65,11 @@
 			for(var i=0; i<oTable.fnSettings().aoColumns.length; i++)
 			{
 				oTable.fnSettings().aoColumns[i].bSortable = false;
-				//for(var j=0; j<aaSortingFixed.length; j++)
-				//{
-					//if( i == aaSortingFixed[j][0] )
-					//	oTable.fnSettings().aoColumns[i].bSortable = true;
-				//}
-
+				/*for(var j=0; j<aaSortingFixed.length; j++)
+				{
+					if( i == aaSortingFixed[j][0] )
+						oTable.fnSettings().aoColumns[i].bSortable = false;
+				}*/
 			}
 			
             $("tbody", oTable).sortable({
@@ -79,8 +84,8 @@
 
                     $(sSelector, oTable).each(function (index) {
                         if (ui.item.context.id == this.id) {
-                            var from = oTable.fnGetData(this, properties.iIndexColumn);
-                            var to = index + 1;
+                            iFrom = oTable.fnGetData(this, properties.iIndexColumn);
+                            iTo = index + 1;
                             var tr = this;
 
                             if (properties.sURL != null) {
@@ -88,11 +93,11 @@
                                     url: properties.sURL,
                                     type: properties.sRequestType,
                                     data: { id: ui.item.context.id,
-                                            fromPosition: from,
-                                            toPosition: to
+                                            fromPosition: iFrom,
+                                            toPosition: iTo
                                     },
                                     success: function () {
-                                        fnRefreshRowPositions(sSelector, from, to, ui.item.context.id);
+                                        fnRefreshRowPositions(sSelector, iFrom, iTo, ui.item.context.id);
                                     },
                                     error: function () {
                                         tbody.sortable('cancel');
@@ -101,19 +106,10 @@
                                 });
                             }
                         }
-                        /*
-
-                        var pos = oTable.fnGetPosition(this); // get row position in current model
-                        if (properties.iIndexColumn > -1)
-                        oTable.fnUpdate(index + properties.iStartPosition, pos, properties.iIndexColumn, false); // false = defer redraw until all row updates are done
-                        else
-                        $(this).attr("data-position", index);
-                        */
-
                     });
-                    //oTable.fnDraw();
+
                     if (properties.sURL == null) {
-                        fnRefreshRowPositions(sSelector, 0, 0, ui.item.context.id);
+                        fnRefreshRowPositions(sSelector, iFrom, iTo, ui.item.context.id);
                     }
 
                 }
