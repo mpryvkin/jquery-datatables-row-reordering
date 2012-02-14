@@ -51,6 +51,22 @@
 
         return this.each(function () {
 
+		    var aaSortingFixed = (oTable.fnSettings().aaSortingFixed==null?new Array():oTable.fnSettings().aaSortingFixed);
+            aaSortingFixed.push([properties.iIndexColumn, "asc"]);
+
+            oTable.fnSettings().aaSortingFixed = aaSortingFixed;
+
+			for(var i=0; i<oTable.fnSettings().aoColumns.length; i++)
+			{
+				oTable.fnSettings().aoColumns[i].bSortable = false;
+				//for(var j=0; j<aaSortingFixed.length; j++)
+				//{
+					//if( i == aaSortingFixed[j][0] )
+					//	oTable.fnSettings().aoColumns[i].bSortable = true;
+				//}
+
+			}
+			
             $("tbody", oTable).sortable({
                 cursor: "move",
                 update: function (event, ui) {
