@@ -1,6 +1,6 @@
 #summary Setup Reordering features
 
-[Index] 
+[Index] > Setup
 
 = Introduction =
 
