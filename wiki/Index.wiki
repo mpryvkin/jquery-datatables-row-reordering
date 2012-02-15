@@ -31,9 +31,10 @@ You can find more details about the usage of plugin on the following pages:
   * [RowGrouping Reordering grouped rows] - example of integration with row grouping plugin.
 
 Also, you can find few examples on the following live demo pages:
-  * [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/default.html default usage]
-  * [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/notify.html server side integration]
-  * [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/rowGrouping.html reordering grouped rows]
+  * [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/default.html Default usage]
+  * [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/notify.html Server side integration]
+  * [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/error.html Handling server-side errors during reordering]
+  * [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/rowGrouping.html Reordering grouped rows]
  
 == Dependencies ==
 
