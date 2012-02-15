@@ -28,6 +28,7 @@ This call will add following features to DataTable:
 You can find more details about the usage of plugin on the following pages:
   * [RowReordering Setup] - implementing row reordering features in table
   * [ServerSideIntegration Server Side Integration] - integration of plugin with server-side page that can update order of records in some persistent storage.
+  * [RowGrouping Reordering grouped rows] - example of integration with row grouping plugin.
 
 Also, you can find few examples on the following live demo pages:
   * [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/default.html default usage]
