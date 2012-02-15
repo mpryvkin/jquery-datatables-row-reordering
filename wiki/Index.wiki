@@ -1,0 +1,31 @@
+#summary Documentation for DataTables Row Reordering plugin
+#labels Featured
+
+= Introduction =
+Row Reordering plugin is an additional add-on for DataTables plugin that enables users to reorder rows int the table using simple Drag'n'Drop.
+
+= Details =
+
+DataTables plugin adds lot of common functionalities to the simple HTML tables. This plugin enhances table by adding JavaScript functionalities for filtering, sorting, pagination. Initialization is simple and just one JavaScript call is needed:
+{{{
+    $('#example').dataTable();
+}}}
+
+There are lot of other functionalities such as column reordering, column hiding, etc, but reordering rows using Drag'n'Drop is not standard feature.
+This plugin adds this feature to DataTables - you just need to add one additional function call:
+
+{{{
+    $('#example').dataTable()
+		 .rowReordering();
+}}}
+
+This call will add following features to DataTable:
+  * Enable user to Drag'n'Drop rows
+  * Notify server-side page that order is changed
+
+= Dependencies =
+
+DataTables Row Reordering plugin requires following JavaScript libraries:
+  * JQuery 
+  * JQuery UI (only sortable is required)
+  * JQuery DataTables plugin (tested with version 1.9)
