@@ -20,21 +20,64 @@
 (function ($) {
 
     $.fn.rowReordering = function (options) {
+	
+		function _fnStartProcessingMode() {
+            ///<summary>
+            ///Function that starts "Processing" mode i.e. shows "Processing..." dialog while some action is executing(Default function)
+            ///</summary>
+
+            if (oTable.fnSettings().oFeatures.bProcessing) {
+                $(".dataTables_processing").css('visibility', 'visible');
+            }
+        }
+
+        function _fnEndProcessingMode() {
+            ///<summary>
+            ///Function that ends the "Processing" mode and returns the table in the normal state(Default function)
+            ///</summary>
+
+            if (oTable.fnSettings().oFeatures.bProcessing) {
+                $(".dataTables_processing").css('visibility', 'hidden');
+            }
+        }
 		
+		function fnGetStartPosition(sSelector) {
+			var iStart = 100000000000000;
+			$(sSelector, oTable).each(function () {
+				iPosition =  parseInt( oTable.fnGetData(this, properties.iIndexColumn) );
+				if(iPosition < iStart)
+					iStart = iPosition; 
+			});
+			return iStart;
+		}
         function fnRefreshRowPositions(sSelector, from, to, id) {
 		
 			var oSettings = oTable.fnSettings();
 			
             $(sSelector, oTable).each(function (index) {
 
-                oTable.fnUpdate(oSettings._iDisplayStart + index + properties.iStartPosition, 
+                //oTable.fnUpdate(oSettings._iDisplayStart + index + properties.iStartPosition, 
+				oTable.fnUpdate(fnGetStartPosition(sSelector) + index,
 								oTable.fnGetPosition(this), // get row position in current model
 								properties.iIndexColumn,
 								false); // false = defer redraw until all row updates are done
 
             });
 			
-            oTable.fnDraw();
+            //oTable.fnDraw();
+			
+			//Standing Redraw Extension
+			//Author: 	Jonathan Hoguet
+			//http://datatables.net/plug-ins/api#fnStandingRedraw
+			if(oSettings.oFeatures.bServerSide === false){
+					var before = oSettings._iDisplayStart;
+					oSettings.oApi._fnReDraw(oSettings);
+					//iDisplayStart has been reset to zero - so lets change it back
+					oSettings._iDisplayStart = before;
+					oSettings.oApi._fnCalculateEnd(oSettings);
+			}
+			//draw the 'current' page
+			oSettings.oApi._fnDraw(oSettings);
 			
         }
 
@@ -48,7 +91,10 @@
             sURL: null,
             sRequestType: "POST",
             sGroupingUsed: false,
-            fnAlert: _fnAlert
+            fnAlert: _fnAlert,
+			sDataGroupAttribute: "data-group",
+			fnStartProcessingMode:_fnStartProcessingMode,
+			fnEndProcessingMode: _fnEndProcessingMode
         };
 
         var properties = $.extend(defaults, options);
@@ -61,6 +107,7 @@
             aaSortingFixed.push([properties.iIndexColumn, "asc"]);
 
             oTable.fnSettings().aaSortingFixed = aaSortingFixed;
+			
 
 			for(var i=0; i<oTable.fnSettings().aoColumns.length; i++)
 			{
@@ -71,37 +118,46 @@
 						oTable.fnSettings().aoColumns[i].bSortable = false;
 				}*/
 			}
+			oTable.fnDraw();
 			
             $("tbody", oTable).sortable({
                 cursor: "move",
                 update: function (event, ui) {
                     var tbody = $(this);
                     var sSelector = "tbody tr";
+					var sGroup = "";
                     if (properties.bGroupingUsed) {
-                        var group = $(ui.item).attr("data-group");
-                        sSelector = "tbody tr[data-group='" + group + "']";
+                        sGroup = $(ui.item).attr(properties.sDataGroupAttribute);
+                        sSelector = "tbody tr[" + properties.sDataGroupAttribute + " ='" + sGroup + "']";
                     }
 
                     $(sSelector, oTable).each(function (index) {
+						var oSettings = oTable.fnSettings();
+						
                         if (ui.item.context.id == this.id) {
                             iFrom = oTable.fnGetData(this, properties.iIndexColumn);
-                            iTo = index + 1;
+                            iTo =  fnGetStartPosition(sSelector) + index;
+							
                             var tr = this;
 
                             if (properties.sURL != null) {
+								properties.fnStartProcessingMode();
                                 $.ajax({
                                     url: properties.sURL,
                                     type: properties.sRequestType,
                                     data: { id: ui.item.context.id,
                                             fromPosition: iFrom,
-                                            toPosition: iTo
+                                            toPosition: iTo,
+											group: sGroup
                                     },
                                     success: function () {
                                         fnRefreshRowPositions(sSelector, iFrom, iTo, ui.item.context.id);
+										properties.fnEndProcessingMode();
                                     },
-                                    error: function () {
+                                    error: function (jqXHR) {
                                         tbody.sortable('cancel');
-                                        properties.fnAlert("Order canot be changed on the server-side");
+										properties.fnEndProcessingMode();
+                                        properties.fnAlert(jqXHR.statusText);
                                     }
                                 });
                             }

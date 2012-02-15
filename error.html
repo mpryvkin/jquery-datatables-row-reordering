@@ -3,7 +3,7 @@
 
 	
 		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-		<link rel="shortcut icon" type="image/ico" href="http://www.sprymedia.co.uk/media/images/favicon.ico">
+		<link rel="shortcut icon" type="image/ico" href="media/images/favicon.ico">
 		
 		<title>Handling server-side errors when rows in the table are reordered</title>
 		<style type="text/css" title="currentStyle">
@@ -22,7 +22,11 @@
 		<script type="text/javascript" charset="utf-8">
 		    $(document).ready(function () {
 		        $('#example').dataTable()
-                                .rowReordering({ sURL:"NonExistingPage.php"});
+                                .rowReordering({ sURL:"NonExistingPage.php",
+												 fnAlert: function(text){
+														alert("Order canot be changed on the server-side.\n" + text);
+												 }
+												 });
 
 		    });
 		</script>
@@ -48,7 +52,7 @@
 
 		<div id="container">
 			<a href="index.html">Home</a>
-			<a href="http://code.google.com/p/jquery-datatables-editable/wiki/Overview">Wiki</a> 
+			<a href="http://code.google.com/p/jquery-datatables-row-reordering/wiki/ServerSideIntegration">Wiki</a> 
 			<h1 class="full_width big">
 
 				JQuery DataTable Row Reordering - Handling errors on the server-side
