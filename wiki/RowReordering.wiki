@@ -32,3 +32,6 @@ Once you run this code in the HTML you will be able to reorder rows using Drag'n
 There are few constraints in this plugin:
    * Rows can be ordered only by *indexing* column. This plugin  will force ascending sorting by indexing column.
    * Sorting by columns will be disabled. If you shuffle rows in some order other than indexing column order there will be no way to determine to what position row is dropped.
+
+
+Next: [ServerSideIntegration Server Side Integration]
