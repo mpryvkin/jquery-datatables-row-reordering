@@ -43,4 +43,4 @@ If server-side page returns any error, plugin will show error message and revert
 You can see live example on the 
 [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/error.html live demo page].
 
-Previous: [Setup] Next: [RowGrouping Reordering grouped rows]
+Previous: [RowReordering Setup] Next: [RowGrouping Reordering grouped rows]
