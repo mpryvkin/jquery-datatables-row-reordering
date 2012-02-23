@@ -31,3 +31,5 @@ Plugin will enable user to drag and drop rows and it will update indexes only wi
 
 You can see live example on the 
 [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/rowGrouping.html live demo page].
+
+See also: [ServerSideIntegration Server Side Integration]
