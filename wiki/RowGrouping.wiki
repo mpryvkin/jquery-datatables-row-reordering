@@ -19,7 +19,7 @@ To enable reordering of grouped rows you will need to apply both rowGrouping and
 $('#example').dataTable()
              .rowGrouping({   iGroupingColumnIndex: 1 })
              .rowReordering({ 
-                              bGroupingUsed: true,
+                              iGroupingLevel: 1,
                               iIndexColumn: 0
                             });
 }}}
@@ -27,7 +27,7 @@ $('#example').dataTable()
 In the row grouping plugin you will need to define what column will be used for grouping (column 1 in the example above). Also, in the row reordering plugin you will need to define that grouping is used and in which column are placed positions(indexes within the group).
 Plugin will enable user to drag and drop rows and it will update indexes only within the current group.
 
- Row reordering plugin will not allow you to move rows between groups because it will involve changing information about the group and indexing information. If you want to move rows to other groups you will need to edit it, change group manually, and then change position with row reordering plugin.
+Row reordering plugin will not allow you to move rows between groups because it will involve changing information about the group and indexing information. If you want to move rows to other groups you will need to edit it, change group manually, and then change position with row reordering plugin.
 
 You can see live example on the 
 [http://jquery-datatables-row-reordering.googlecode.com/svn/trunk/rowGrouping.html live demo page].
