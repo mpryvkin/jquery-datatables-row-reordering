@@ -15,7 +15,7 @@
 * Parameters:
 * @iIndexColumn     int         Position of the indexing column
 * @sURL             String      Server side page tat will be notified that order is changed
-* @sGroupingUsed    Boolean     Defines that grouping is used
+* @iGroupingLevel   int         Defines that grouping is used
 */
 (function ($) {
 
@@ -171,7 +171,7 @@
             iStartPosition: 1,
             sURL: null,
             sRequestType: "POST",
-            sGroupingUsed: false,
+            iGroupingLevel: 0,
             fnAlert: _fnAlert,
             sDataGroupAttribute: "data-group",
             fnStartProcessingMode: _fnStartProcessingMode,
@@ -206,14 +206,23 @@
                     var tbody = $(this);
                     var sSelector = "tbody tr";
                     var sGroup = "";
-                    if (properties.bGroupingUsed) {
+                    if (properties.iGroupingLevel == 1) {
                         sGroup = $(ui.item).attr(properties.sDataGroupAttribute);
                         sSelector = "tbody tr[" + properties.sDataGroupAttribute + " ='" + sGroup + "']";
                     }
 
                     var oState = fnGetState(sSelector, ui.item.context.id);
+					if(oState.iNewPosition == -1)
+					{
+						tbody.sortable('cancel');
+						if (properties.iGroupingLevel > 0)
+							properties.fnAlert("Rows cannot be moved between groups", "");
+						else
+							properties.fnAlert("Row cannot be moved", "");
 
-                    alert(oState.iCurrentPosition + " - " + oState.iNewPosition);
+                        properties.fnEndProcessingMode();
+						return;
+					}
 
                     if (properties.sURL != null) {
                         properties.fnStartProcessingMode();
