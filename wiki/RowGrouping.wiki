@@ -19,7 +19,7 @@ To enable reordering of grouped rows you will need to apply both rowGrouping and
 $('#example').dataTable()
              .rowGrouping({   iGroupingColumnIndex: 1 })
              .rowReordering({ 
-                              iGroupingLevel: 1,
+                              bGroupingUsed: true,
                               iIndexColumn: 0
                             });
 }}}
