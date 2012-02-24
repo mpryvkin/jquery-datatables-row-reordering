@@ -42,13 +42,25 @@
         }
 
         function fnGetStartPosition(sSelector) {
-            var iStart = 100000000000000;
+            var iStart = 1000000;
             $(sSelector, oTable).each(function () {
                 iPosition = parseInt(oTable.fnGetData(this, properties.iIndexColumn));
                 if (iPosition < iStart)
                     iStart = iPosition;
             });
             return iStart;
+        }
+		
+		function fnCancelSorting(tbody, properties, iLogLevel, sMessage) {
+			tbody.sortable('cancel');
+			if(iLogLevel<=properties.iLogLevel){
+				if(sMessage!= undefined){
+					properties.fnAlert(sMessage, "");
+				}else{
+					properties.fnAlert("Row cannot be moved", "");
+				}
+			}
+			properties.fnEndProcessingMode();
         }
 
         function fnGetState(sSelector, id) {
@@ -131,37 +143,6 @@
             oSettings.oApi._fnDraw(oSettings);
         }
 
-        //        function fnRefreshRowPositions(sSelector, id) {
-
-        //            var oSettings = oTable.fnSettings();
-
-        //            $(sSelector, oTable).each(function (index) {
-
-        //                //oTable.fnUpdate(oSettings._iDisplayStart + index + properties.iStartPosition, 
-        //                oTable.fnUpdate(fnGetStartPosition(sSelector) + index,
-        //								oTable.fnGetPosition(this), // get row position in current model
-        //								properties.iIndexColumn,
-        //								false); // false = defer redraw until all row updates are done
-
-        //            });
-
-        //            //oTable.fnDraw();
-
-        //            //Standing Redraw Extension
-        //            //Author: 	Jonathan Hoguet
-        //            //http://datatables.net/plug-ins/api#fnStandingRedraw
-        //            if (oSettings.oFeatures.bServerSide === false) {
-        //                var before = oSettings._iDisplayStart;
-        //                oSettings.oApi._fnReDraw(oSettings);
-        //                //iDisplayStart has been reset to zero - so lets change it back
-        //                oSettings._iDisplayStart = before;
-        //                oSettings.oApi._fnCalculateEnd(oSettings);
-        //            }
-        //            //draw the 'current' page
-        //            oSettings.oApi._fnDraw(oSettings);
-
-        //        }
-
         function _fnAlert(message, type) { alert(message); }
 
         var oTable = this;
@@ -173,6 +154,7 @@
             sRequestType: "POST",
             iGroupingLevel: 0,
             fnAlert: _fnAlert,
+			iLogLevel: 1,
             sDataGroupAttribute: "data-group",
             fnStartProcessingMode: _fnStartProcessingMode,
             fnEndProcessingMode: _fnEndProcessingMode
@@ -206,21 +188,19 @@
                     var tbody = $(this);
                     var sSelector = "tbody tr";
                     var sGroup = "";
-                    if (properties.iGroupingLevel == 1) {
+                    if (properties.bGroupingUsed) {
                         sGroup = $(ui.item).attr(properties.sDataGroupAttribute);
+						if(sGroup==null || sGroup==undefined){
+							fnCancelSorting(tbody, properties, 3, "Grouping row cannot be moved");
+							return;
+						}
                         sSelector = "tbody tr[" + properties.sDataGroupAttribute + " ='" + sGroup + "']";
                     }
 
                     var oState = fnGetState(sSelector, ui.item.context.id);
 					if(oState.iNewPosition == -1)
 					{
-						tbody.sortable('cancel');
-						if (properties.iGroupingLevel > 0)
-							properties.fnAlert("Rows cannot be moved between groups", "");
-						else
-							properties.fnAlert("Row cannot be moved", "");
-
-                        properties.fnEndProcessingMode();
+						fnCancelSorting(tbody, properties,2);
 						return;
 					}
 
@@ -240,53 +220,12 @@
                                 properties.fnEndProcessingMode();
                             },
                             error: function (jqXHR) {
-                                tbody.sortable('cancel');
-                                properties.fnEndProcessingMode();
-                                properties.fnAlert(jqXHR.statusText);
+								fnCancelSorting(tbody, properties, 1, jqXHR.statusText);
                             }
                         });
                     } else {
                         fnMoveRows(sSelector, oState.iCurrentPosition, oState.iNewPosition, oState.sDirection, ui.item.context.id, sGroup);
                     }
-
-
-
-                    //                    $(sSelector, oTable).each(function (index) {
-                    //                        var oSettings = oTable.fnSettings();
-
-                    //                        if (ui.item.context.id == this.id) {
-                    //                            iFrom = oTable.fnGetData(this, properties.iIndexColumn);
-                    //                            iTo = fnGetStartPosition(sSelector) + index;
-
-                    //                            var tr = this;
-
-                    //                            if (properties.sURL != null) {
-                    //                                properties.fnStartProcessingMode();
-                    //                                $.ajax({
-                    //                                    url: properties.sURL,
-                    //                                    type: properties.sRequestType,
-                    //                                    data: { id: ui.item.context.id,
-                    //                                        fromPosition: iFrom,
-                    //                                        toPosition: iTo,
-                    //                                        group: sGroup
-                    //                                    },
-                    //                                    success: function () {
-                    //                                        fnRefreshRowPositions(sSelector, iFrom, iTo, ui.item.context.id);
-                    //                                        properties.fnEndProcessingMode();
-                    //                                    },
-                    //                                    error: function (jqXHR) {
-                    //                                        tbody.sortable('cancel');
-                    //                                        properties.fnEndProcessingMode();
-                    //                                        properties.fnAlert(jqXHR.statusText);
-                    //                                    }
-                    //                                });
-                    //                            }
-                    //                        }
-                    //                    });
-
-                    //                    if (properties.sURL == null) {
-                    //                        fnRefreshRowPositions(sSelector, iFrom, iTo, ui.item.context.id);
-                    //                    }
 
                 }
             });
