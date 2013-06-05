@@ -1,9 +1,9 @@
 /*
 * File:        jquery.dataTables.rowReordering.js
-* Version:     1.1.0.
+* Version:     1.2.0.
 * Author:      Jovan Popovic 
 * 
-* Copyright 2012 Jovan Popovic, all rights reserved.
+* Copyright 2013 Jovan Popovic, all rights reserved.
 *
 * This source file is free software, under either the GPL v2 license or a
 * BSD style license, as supplied with this software.
@@ -159,7 +159,8 @@
 			iLogLevel: 1,
             sDataGroupAttribute: "data-group",
             fnStartProcessingMode: _fnStartProcessingMode,
-            fnEndProcessingMode: _fnEndProcessingMode
+            fnEndProcessingMode: _fnEndProcessingMode,
+            fnUpdateAjaxRequest: jQuery.noop			
         };
 
         var properties = $.extend(defaults, options);
@@ -225,7 +226,7 @@
 
                     if (properties.sURL != null) {
                         properties.fnStartProcessingMode($dataTable);
-                        $.ajax({
+						var oAjaxRequest = {
                             url: properties.sURL,
                             type: properties.sRequestType,
                             data: { id: ui.item.context.id,
@@ -241,7 +242,9 @@
                             error: function (jqXHR) {
                                 fnCancelSorting($dataTable, tbody, properties, 1, jqXHR.statusText);
                             }
-                        });
+                        };
+						properties.fnUpdateAjaxRequest(oAjaxRequest, properties, $dataTable);
+                        $.ajax(oAjaxRequest);
                     } else {
                         fnMoveRows($dataTable, sSelector, oState.iCurrentPosition, oState.iNewPosition, oState.sDirection, ui.item.context.id, sGroup);
                     }
