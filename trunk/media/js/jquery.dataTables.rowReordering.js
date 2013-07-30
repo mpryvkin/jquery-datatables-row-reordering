@@ -1,6 +1,6 @@
 /*
 * File:        jquery.dataTables.rowReordering.js
-* Version:     1.2.0.
+* Version:     1.2.1.
 * Author:      Jovan Popovic 
 * 
 * Copyright 2013 Jovan Popovic, all rights reserved.
@@ -147,8 +147,6 @@
 
         function _fnAlert(message, type) { alert(message); }
 
-        //var oTable = this;
-
         var defaults = {
             iIndexColumn: 0,
             iStartPosition: 1,
@@ -156,7 +154,8 @@
             sRequestType: "POST",
             iGroupingLevel: 0,
             fnAlert: _fnAlert,
-			iLogLevel: 1,
+            fnSuccess: jQuery.noop,
+            iLogLevel: 1,
             sDataGroupAttribute: "data-group",
             fnStartProcessingMode: _fnStartProcessingMode,
             fnEndProcessingMode: _fnEndProcessingMode,
@@ -235,7 +234,8 @@
                                 direction: oState.sDirection,
                                 group: sGroup
                             },
-                            success: function () {
+                            success: function (data) {
+                                properties.fnSuccess(data);
                                 fnMoveRows($dataTable, sSelector, oState.iCurrentPosition, oState.iNewPosition, oState.sDirection, ui.item.context.id, sGroup);
                                 properties.fnEndProcessingMode($dataTable);
                             },
