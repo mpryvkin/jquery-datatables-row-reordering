@@ -183,7 +183,7 @@
 				sDataGroupAttribute: "data-group",
 				fnStartProcessingMode: _fnStartProcessingMode,
 				fnEndProcessingMode: _fnEndProcessingMode,
-				fnUpdateAjaxRequest: jQuery.noop		    
+				fnUpdateAjaxRequest: jQuery.noop
 		};
 
 		var properties = $.extend(defaults, options);
@@ -204,115 +204,124 @@
 		};
 
 		// ### KCM ### Ugly and fast method to get dataTable object
-		//#return this.each(function () {
-		//#     var oTable = $(this).dataTable();
-		var oTable = $('#' + this.context[0].nTable.id).dataTable();
-		// ### END ###
-		
-		var aaSortingFixed = (oTable.fnSettings().aaSortingFixed == null ? new Array() : oTable.fnSettings().aaSortingFixed);
-		aaSortingFixed.push([properties.iIndexColumn, "asc"]);
-
-		oTable.fnSettings().aaSortingFixed = aaSortingFixed;
-
-		
-		for (var i = 0; i < oTable.fnSettings().aoColumns.length; i++) {
-			oTable.fnSettings().aoColumns[i].bSortable = false;
-			/*for(var j=0; j<aaSortingFixed.length; j++)
-		{
-		if( i == aaSortingFixed[j][0] )
-		settings.aoColumns[i].bSortable = false;
-		}*/
+		var tables;
+		if(this instanceof jQuery){
+			tables = this;
+		} else {
+			tables = this.context;
 		}
-		oTable.fnDraw();
 
-		$("tbody", oTable).disableSelection().sortable({
-			cursor: "move",
-			helper: tableFixHelper,
-			update: function (event, ui) {
-				var $dataTable = oTable;
-				var tbody = $(this);
-				var sSelector = "tbody tr";
-				var sGroup = "";
-				if (properties.bGroupingUsed) {
-					sGroup = $(ui.item).attr(properties.sDataGroupAttribute);
-					if(sGroup==null || sGroup==undefined){
-						fnCancelSorting($dataTable, tbody, properties, 3, "Grouping row cannot be moved");
+		$.each(tables, function () {
+			var oTable;
+
+			if (typeof this.nodeType !== 'undefined'){
+				oTable = $(this).dataTable();
+			} else {
+				oTable = $(this.nTable).dataTable();
+			}
+			
+			var aaSortingFixed = (oTable.fnSettings().aaSortingFixed == null ? new Array() : oTable.fnSettings().aaSortingFixed);
+			aaSortingFixed.push([properties.iIndexColumn, "asc"]);
+
+			oTable.fnSettings().aaSortingFixed = aaSortingFixed;
+
+			
+			for (var i = 0; i < oTable.fnSettings().aoColumns.length; i++) {
+				oTable.fnSettings().aoColumns[i].bSortable = false;
+				/*for(var j=0; j<aaSortingFixed.length; j++)
+			{
+			if( i == aaSortingFixed[j][0] )
+			settings.aoColumns[i].bSortable = false;
+			}*/
+			}
+			oTable.fnDraw();
+
+			$("tbody", oTable).disableSelection().sortable({
+				cursor: "move",
+				helper: tableFixHelper,
+				update: function (event, ui) {
+					var $dataTable = oTable;
+					var tbody = $(this);
+					var sSelector = "tbody tr";
+					var sGroup = "";
+					if (properties.bGroupingUsed) {
+						sGroup = $(ui.item).attr(properties.sDataGroupAttribute);
+						if(sGroup==null || sGroup==undefined){
+							fnCancelSorting($dataTable, tbody, properties, 3, "Grouping row cannot be moved");
+							return;
+						}
+						sSelector = "tbody tr[" + properties.sDataGroupAttribute + " ='" + sGroup + "']";
+					}
+
+					// ### KCM ###
+					//      pass 'tr' directly, instead of giving id then redo a $('#' + id) in the function...
+					// #var oState = fnGetState($dataTable, sSelector, ui.item.context.id);
+					var tr = $( ui.item.context );
+					var oState = fnGetState($dataTable, sSelector, tr);
+					/// ### END ###
+					if(oState.iNewPosition == -1) {
+						fnCancelSorting($dataTable, tbody, properties,2);
 						return;
 					}
-					sSelector = "tbody tr[" + properties.sDataGroupAttribute + " ='" + sGroup + "']";
-				}
 
-				// ### KCM ###
-				//      pass 'tr' directly, instead of giving id then redo a $('#' + id) in the function...
-				// #var oState = fnGetState($dataTable, sSelector, ui.item.context.id);
-				var tr = $( ui.item.context );
-				var oState = fnGetState($dataTable, sSelector, tr);
-				/// ### END ###
-				if(oState.iNewPosition == -1) {
-					fnCancelSorting($dataTable, tbody, properties,2);
-					return;
-				}
+					if (properties.sURL != null) {
+						properties.fnStartProcessingMode($dataTable);
+						var oAjaxRequest = {
+								url: properties.sURL,
+								type: properties.sRequestType,
+								data: { id: ui.item.context.id,
+									fromPosition: oState.iCurrentPosition,
+									toPosition: oState.iNewPosition,
+									direction: oState.sDirection,
+									group: sGroup
+									// ### KCM ### Can pass additional data in POST
+									,data: properties.sData
+									// ### END ###
+								},
+								success: function (data) {
+									properties.fnSuccess(data);
 
-				if (properties.sURL != null) {
-					properties.fnStartProcessingMode($dataTable);
-					var oAjaxRequest = {
-							url: properties.sURL,
-							type: properties.sRequestType,
-							data: { id: ui.item.context.id,
-								fromPosition: oState.iCurrentPosition,
-								toPosition: oState.iNewPosition,
-								direction: oState.sDirection,
-								group: sGroup
-								// ### KCM ### Can pass additional data in POST
-								,data: properties.sData
-								// ### END ###
-							},
-							success: function (data) {
-								properties.fnSuccess(data);
+									// ###KCM### Can avoid moving rows if we want (for example if we reload all the table in ajax juste after)
+									if(! properties.avoidMovingRows)
+										fnMoveRows($dataTable, sSelector, oState.iCurrentPosition, oState.iNewPosition, oState.sDirection, ui.item.context.id, sGroup);
+									// ### END ###
+									properties.fnEndProcessingMode($dataTable);
 
-								// ###KCM### Can avoid moving rows if we want (for example if we reload all the table in ajax juste after)
-								if(! properties.avoidMovingRows)
-									fnMoveRows($dataTable, sSelector, oState.iCurrentPosition, oState.iNewPosition, oState.sDirection, ui.item.context.id, sGroup);
-								// ### END ###
-								properties.fnEndProcessingMode($dataTable);
-
-								// ###KCM### Can have a callback when drop is finished
-								// Source: 
-								//      https://code.google.com/p/jquery-datatables-row-reordering/wiki/Index,
-								//      --> Free comment of "Comment by ra...@webrun.ca, Mar 16, 2013"
-								if(properties.callback && typeof(properties.callback) === 'function'){
-									properties.callback();
+									// ###KCM### Can have a callback when drop is finished
+									// Source: 
+									//      https://code.google.com/p/jquery-datatables-row-reordering/wiki/Index,
+									//      --> Free comment of "Comment by ra...@webrun.ca, Mar 16, 2013"
+									if(properties.callback && typeof(properties.callback) === 'function'){
+										properties.callback();
+									}
+									// ###END###
+								},
+								error: function (jqXHR) {
+									//### KCM ### Get response text instead of statusText if any
+									// #fnCancelSorting($dataTable, tbody, properties, 1, jqXHR.statusText);
+									var err = (jqXHR.responseText != "" ? jqXHR.responseText : jqXHR.statusText);
+									fnCancelSorting($dataTable, tbody, properties, 1, err);
+									// ### END ###
 								}
-								// ###END###
-							},
-							error: function (jqXHR) {
-								//### KCM ### Get response text instead of statusText if any
-								// #fnCancelSorting($dataTable, tbody, properties, 1, jqXHR.statusText);
-								var err = (jqXHR.responseText != "" ? jqXHR.responseText : jqXHR.statusText);
-								fnCancelSorting($dataTable, tbody, properties, 1, err);
-								// ### END ###
-							}
-					};
-					properties.fnUpdateAjaxRequest(oAjaxRequest, properties, $dataTable);
-					$.ajax(oAjaxRequest);
-				} else {
-					fnMoveRows($dataTable, sSelector, oState.iCurrentPosition, oState.iNewPosition, oState.sDirection, ui.item.context.id, sGroup);
-				}
+						};
+						properties.fnUpdateAjaxRequest(oAjaxRequest, properties, $dataTable);
+						$.ajax(oAjaxRequest);
+					} else {
+						fnMoveRows($dataTable, sSelector, oState.iCurrentPosition, oState.iNewPosition, oState.sDirection, ui.item.context.id, sGroup);
+					}
 
-			}
+				}
+			});
 		});
 
-		/// ### KCM ###
-		//#});
-		return oTable;
-		// ### END ###
+		return this;
 	};
 
 	// Attach RowReordering to DataTables so it can be accessed as an 'extra'
 	$.fn.dataTable.rowReordering = $.fn.rowReordering;
 	$.fn.DataTable.rowReordering = $.fn.rowReordering;
 
-	//      DataTables 1.10 API method aliases
+	// DataTables 1.10 API method aliases
 	if ( $.fn.dataTable.Api ) {
 		var Api = $.fn.dataTable.Api;
 		Api.register( 'rowReordering()', $.fn.rowReordering );
