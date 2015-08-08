@@ -1,6 +1,6 @@
 /*
  * File:        jquery.dataTables.rowReordering.js
- * Version:     1.2.2 / Datatables 1.10 hack
+ * Version:     1.2.3 / Datatables 1.10 hack
  * Author:      Jovan Popovic
  *
  * Copyright 2013 Jovan Popovic, all rights reserved.
@@ -21,7 +21,7 @@
  *                      sURL: 'UpdateRowOrder.php',
  *                      avoidMovingRows: true
  *              });
- *  - can call a callback() function when drop is finished
+ *  - can call a fnUpdateCallback() function when drop is finished
  *      (Integration of a free comment in: https://code.google.com/p/jquery-datatables-row-reordering/wiki/Index)
  *              Author: "Comment by ra...@webrun.ca, Mar 16, 2013"
  *  - can pass additional data in POST, like this:
@@ -264,20 +264,23 @@
                   return;
                }
 
+               var sRequestData = {
+                  id: ui.item.context.id,
+                  fromPosition: oState.iCurrentPosition,
+                  toPosition: oState.iNewPosition,
+                  direction: oState.sDirection,
+                  group: sGroup,
+                  // ### KCM ### Can pass additional data in POST
+                  data: properties.sData
+                  // ### END ###
+               };
+
                if (properties.sURL != null) {
                   properties.fnStartProcessingMode($dataTable);
                   var oAjaxRequest = {
                         url: properties.sURL,
                         type: properties.sRequestType,
-                        data: { id: ui.item.context.id,
-                           fromPosition: oState.iCurrentPosition,
-                           toPosition: oState.iNewPosition,
-                           direction: oState.sDirection,
-                           group: sGroup
-                           // ### KCM ### Can pass additional data in POST
-                           ,data: properties.sData
-                           // ### END ###
-                        },
+                        data: sRequestData,
                         success: function (data) {
                            properties.fnSuccess(data);
 
@@ -291,8 +294,8 @@
                            // Source: 
                            //      https://code.google.com/p/jquery-datatables-row-reordering/wiki/Index,
                            //      --> Free comment of "Comment by ra...@webrun.ca, Mar 16, 2013"
-                           if(properties.callback && typeof(properties.callback) === 'function'){
-                              properties.callback();
+                           if(properties.fnUpdateCallback && typeof(properties.fnUpdateCallback) === 'function'){
+                              properties.fnUpdateCallback(sRequestData);
                            }
                            // ###END###
                         },
@@ -308,6 +311,14 @@
                   $.ajax(oAjaxRequest);
                } else {
                   fnMoveRows($dataTable, sSelector, oState.iCurrentPosition, oState.iNewPosition, oState.sDirection, ui.item.context.id, sGroup);
+
+                  // ###KCM### Can have a callback when drop is finished
+                  // Source: 
+                  //      https://code.google.com/p/jquery-datatables-row-reordering/wiki/Index,
+                  //      --> Free comment of "Comment by ra...@webrun.ca, Mar 16, 2013"
+                  if(properties.fnUpdateCallback && typeof(properties.fnUpdateCallback) === 'function'){
+                     properties.fnUpdateCallback(sRequestData);
+                  }
                }
 
             }
