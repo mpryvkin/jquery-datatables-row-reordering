@@ -95,7 +95,7 @@
       function fnGetState(oTable, sSelector, tr) {
          //var tr = $("#" + id, oTable);
       // ### END ###
-         var iCurrentPosition = oTable.fnGetData(tr[0], properties.iIndexColumn);
+         var iCurrentPosition = parseInt(oTable.fnGetData(tr[0], properties.iIndexColumn), 10);
          var iNewPosition = -1; // fnGetStartPosition(sSelector);
          var sDirection;
          var trPrevious = tr.prev(sSelector);
