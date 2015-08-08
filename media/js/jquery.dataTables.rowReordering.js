@@ -1,4 +1,4 @@
-/*
+/*!
  * File:        jquery.dataTables.rowReordering.js
  * Version:     1.2.3 / Datatables 1.10 hack
  * Author:      Jovan Popovic
@@ -7,7 +7,10 @@
  *
  * This source file is free software, under either the GPL v2 license or a
  * BSD style license, as supplied with this software.
- *
+ */
+/*
+ * NOTES:
+ * 
  * This source file is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.
@@ -68,7 +71,7 @@
       function fnGetStartPosition(oTable, sSelector) {
          var iStart = 1000000;
          $(sSelector, oTable).each(function () {
-            iPosition = parseInt(oTable.fnGetData(this, properties.iIndexColumn));
+            iPosition = parseInt(oTable.fnGetData(this, properties.iIndexColumn), 10);
             if (iPosition < iStart)
                iStart = iPosition;
          });
@@ -97,14 +100,14 @@
          var sDirection;
          var trPrevious = tr.prev(sSelector);
          if (trPrevious.length > 0) {
-            iNewPosition = parseInt(oTable.fnGetData(trPrevious[0], properties.iIndexColumn));
+            iNewPosition = parseInt(oTable.fnGetData(trPrevious[0], properties.iIndexColumn), 10);
             if (iNewPosition < iCurrentPosition) {
                iNewPosition = iNewPosition + 1;
             }
          } else {
             var trNext = tr.next(sSelector);
             if (trNext.length > 0) {
-               iNewPosition = parseInt(oTable.fnGetData(trNext[0], properties.iIndexColumn));
+               iNewPosition = parseInt(oTable.fnGetData(trNext[0], properties.iIndexColumn), 10);
                if (iNewPosition > iCurrentPosition)//moved back
                iNewPosition = iNewPosition - 1;
             }
@@ -130,7 +133,7 @@
             if (sGroup != "" && $(this).attr("data-group") != sGroup)
                return;
             var tr = this;
-            var iRowPosition = parseInt(oTable.fnGetData(tr, properties.iIndexColumn));
+            var iRowPosition = parseInt(oTable.fnGetData(tr, properties.iIndexColumn), 10);
             if (iStart <= iRowPosition && iRowPosition <= iEnd) {
                if (tr.id == id) {
                   oTable.fnUpdate(iNewPosition,
@@ -195,11 +198,10 @@
       {
          var $originals = tr.children();
          var $helper = tr.clone();
-         $helper.children().each(function(index)
-               {
+         $helper.children().each(function(index){
             // Set helper cell sizes to match the original sizes
-            $(this).width($originals.eq(index).width())
-               });
+            $(this).width($originals.eq(index).width());
+         });
          return $helper;
       };
 
